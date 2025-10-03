@@ -55,3 +55,4 @@ nunit-*.xml
 /.vs
 /RoutineProject/.vs/RoutineProject
 /RoutineProject/Properties/launchSettings.json
+/Properties/launchSettings.json
