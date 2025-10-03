@@ -1,8 +1,10 @@
 using AutoMapper;
 using AutoMapper.EquivalencyExpression;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using RoutineProject.Context;
 using RoutineProject.Services;
+using RoutineProject.Settings;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<SqlSettings>(builder.Configuration.GetSection("SqlSettings"));
 builder.Services.AddScoped<MachinesJobService>();
 builder.Services.AddScoped<MachinesService>();
 #endregion
