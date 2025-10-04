@@ -11,6 +11,7 @@ public class MachinesJobService
     {
         _mainDbContext = mainDbContext;
     }
+
     public async Task UpdateMachinesAsync()
     {
         var machines = await _mainDbContext.Machines.Where(x => x.Issues.Any()).ToListAsync();
