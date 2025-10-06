@@ -26,6 +26,7 @@ public class ProjectAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
 
     // Get projectId from route data
     var routeData = context.RouteData.Values[_projectIdRouteKey];
+
     if (routeData == null || !Guid.TryParse(routeData.ToString(), out Guid projectId))
     {
       context.Result = new Microsoft.AspNetCore.Mvc.BadRequestResult(); // Or Unauthorized if invalid

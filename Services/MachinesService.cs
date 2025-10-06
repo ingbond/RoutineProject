@@ -89,14 +89,14 @@ public class MachinesService
 
         await _mainDbContext.SaveChangesAsync();
 
-        return _mapper.Map<MachineDto>(newMachine);
+        return _mapper.Map<MachineDto>(createdMachineEntry.Entity);
     }
 
 
     public async Task<MachineDto> UpdateMachineAsync(ClaimsPrincipal userClaims, MachineUpdateDto machineDto, Guid projectId)
     {
         var user = await UserUtil.GetDbUserViaClaimsAsync(_mainDbContext, userClaims);
-        var machine = await GetMachieOrThrow(machineDto.Id, projectId, user);
+        var machine = await GetMachineOrThrow(machineDto.Id, projectId, user);
         _mapper.Map(machineDto, machine);
 
         await _mainDbContext.SaveChangesAsync();
@@ -107,7 +107,7 @@ public class MachinesService
     public async Task DeleteMachineAsync(ClaimsPrincipal userClaims, Guid projectId, Guid machineId)
     {
         var user = await UserUtil.GetDbUserViaClaimsAsync(_mainDbContext, userClaims);
-        var machine = await GetMachieOrThrow(machineId, projectId, user);
+        var machine = await GetMachineOrThrow(machineId, projectId, user);
         _mainDbContext.Remove(machine);
 
         await _mainDbContext.SaveChangesAsync();
@@ -140,12 +140,12 @@ public class MachinesService
         };
     }
 
-    private async Task<Machine> GetMachieOrThrow(Guid machineId, Guid projectId, User user)
+    private async Task<Machine> GetMachineOrThrow(Guid machineId, Guid projectId, User user)
     {
         return await _mainDbContext.UserProjectMappings
           .Include(x => x.Project.Machines)
           .Where(x => x.UserId == user.Id && x.ProjectId == projectId)
           .SelectMany(x => x.Project.Machines)
-          .FirstOrDefaultAsync(x => x.Id == machineId) ?? throw new UnauthorizedAccessException("No machine found or no access to machine");
+          .SingleOrDefaultAsync(x => x.Id == machineId) ?? throw new UnauthorizedAccessException("No machine found or no access to machine");
     }
 }

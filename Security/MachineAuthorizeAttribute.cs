@@ -26,6 +26,7 @@ public class MachineAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
 
     // Get machineId from route data
     var routeData = context.RouteData.Values[_machineIdRouteKey];
+
     if (routeData == null || !Guid.TryParse(routeData.ToString(), out Guid machineId))
     {
       context.Result = new Microsoft.AspNetCore.Mvc.BadRequestResult(); // Or Unauthorized if invalid
