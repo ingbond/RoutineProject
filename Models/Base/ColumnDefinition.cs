@@ -2,57 +2,33 @@
 
 namespace RoutineProject.Models.Base;
 
-public abstract class BaseColumnFilter
+public abstract class BaseColumnFilter(string filterName)
 {
-    public BaseColumnFilter(string filterName)
-    {
-        FilterName = JsonNamingPolicy.CamelCase.ConvertName(filterName);
-    }
-
-    public string FilterName { get; }
+    public string FilterName { get; } = JsonNamingPolicy.CamelCase.ConvertName(filterName);
 }
 
-public class ColumnFilterData : BaseColumnFilter
+public class ColumnFilterData(string name, List<string>? availableValues) : BaseColumnFilter(name)
 {
-    public ColumnFilterData(string name, List<string>? availableValues) : base(name)
-    {
-        AvailableValues = availableValues ?? new List<string>();
-    }
-
-    public List<string> AvailableValues { get; }
+    public List<string> AvailableValues { get; } = availableValues ?? new List<string>();
 }
 
-public class ColumnToggleData : BaseColumnFilter
+public class ColumnToggleData(string name) : BaseColumnFilter(name)
 {
-    public ColumnToggleData(string name) : base(name)
-    {
-    }
 }
 
-public class ColumnDefinition
-{
-    public ColumnDefinition(
-        string name,
-        bool isSortable = false,
-        bool isEditable = false,
-        ColumnFilterData? filter = null,
-        ColumnToggleData? toggle = null,
-        int? basisRem = null
+public class ColumnDefinition(
+    string name,
+    bool isSortable = false,
+    bool isEditable = false,
+    ColumnFilterData? filter = null,
+    ColumnToggleData? toggle = null,
+    int? basisRem = null
     )
-    {
-        Name = JsonNamingPolicy.CamelCase.ConvertName(name);
-        IsSortable = isSortable;
-        IsEditable = isEditable;
-        Filter = filter;
-        Toggle = toggle;
-        BasisRem = basisRem;
-    }
-
-
-    public int? BasisRem { get; set; }
-    public string Name { get; }
-    public bool IsSortable { get; set; }
-    public bool IsEditable { get; }
-    public ColumnFilterData? Filter { get; }
-    public ColumnToggleData? Toggle { get; }
+{
+    public int? BasisRem { get; set; } = basisRem;
+    public string Name { get; } = JsonNamingPolicy.CamelCase.ConvertName(name);
+    public bool IsSortable { get; set; } = isSortable;
+    public bool IsEditable { get; } = isEditable;
+    public ColumnFilterData? Filter { get; } = filter;
+    public ColumnToggleData? Toggle { get; } = toggle;
 }

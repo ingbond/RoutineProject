@@ -4,16 +4,9 @@ using RoutineProject.Utils;
 
 namespace RoutineProject.Security;
 
-public class MachineAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
+public class MachineAuthorizeAttribute(string machineIdRouteKey = "machineId") : Attribute, IAsyncAuthorizationFilter
 {
-  private readonly string _machineIdRouteKey;
-
-  public MachineAuthorizeAttribute(string machineIdRouteKey = "machineId")
-  {
-    _machineIdRouteKey = machineIdRouteKey;
-  }
-
-  public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
   {
     var dbContext = context.HttpContext.RequestServices.GetRequiredService<MainDbContext>();
     var user = await UserUtil.GetDbUserViaClaimsAsync(dbContext, context.HttpContext.User);
@@ -25,7 +18,7 @@ public class MachineAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
     }
 
     // Get machineId from route data
-    var routeData = context.RouteData.Values[_machineIdRouteKey];
+    var routeData = context.RouteData.Values[machineIdRouteKey];
 
     if (routeData == null || !Guid.TryParse(routeData.ToString(), out Guid machineId))
     {

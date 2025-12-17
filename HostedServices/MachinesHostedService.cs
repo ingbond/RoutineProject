@@ -3,14 +3,9 @@ using RoutineProject.Services;
 
 namespace RoutineProject.HostedServices;
 
-public class MachinesHostedService : BaseHostedService
+public class MachinesHostedService(ILogger<MachinesHostedService> logger, IServiceScopeFactory serviceScopeFactory) : BaseHostedService(logger, serviceScopeFactory, _taskDebounceTimeoutMs)
 {
     private const int _taskDebounceTimeoutMs = 10 * 60000; // every 10 min
-
-    public MachinesHostedService(ILogger<MachinesHostedService> logger, IServiceScopeFactory serviceScopeFactory) : 
-        base(logger, serviceScopeFactory, _taskDebounceTimeoutMs)
-    {
-    }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {

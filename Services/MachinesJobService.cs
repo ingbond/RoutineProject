@@ -3,18 +3,11 @@ using RoutineProject.Context;
 
 namespace RoutineProject.Services;
 
-public class MachinesJobService
+public class MachinesJobService(MainDbContext mainDbContext)
 {
-    private MainDbContext _mainDbContext;
-
-    public MachinesJobService(MainDbContext mainDbContext)
-    {
-        _mainDbContext = mainDbContext;
-    }
-
     public async Task UpdateMachinesAsync()
     {
-        var machines = await _mainDbContext.Machines.Where(x => x.Issues.Any()).ToListAsync();
+        var machines = await mainDbContext.Machines.Where(x => x.Issues.Any()).ToListAsync();
 
         foreach (var machine in machines)
         {

@@ -4,16 +4,9 @@ using RoutineProject.Utils;
 
 namespace RoutineProject.Security;
 
-public class ProjectAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
+public class ProjectAuthorizeAttribute(string projectIdRouteKey = "projectId") : Attribute, IAsyncAuthorizationFilter
 {
-  private readonly string _projectIdRouteKey;
-
-  public ProjectAuthorizeAttribute(string projectIdRouteKey = "projectId")
-  {
-    _projectIdRouteKey = projectIdRouteKey;
-  }
-
-  public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
   {
     var dbContext = context.HttpContext.RequestServices.GetRequiredService<MainDbContext>();
     var user = await UserUtil.GetDbUserViaClaimsAsync(dbContext, context.HttpContext.User);
@@ -25,7 +18,7 @@ public class ProjectAuthorizeAttribute : Attribute, IAsyncAuthorizationFilter
     }
 
     // Get projectId from route data
-    var routeData = context.RouteData.Values[_projectIdRouteKey];
+    var routeData = context.RouteData.Values[projectIdRouteKey];
 
     if (routeData == null || !Guid.TryParse(routeData.ToString(), out Guid projectId))
     {

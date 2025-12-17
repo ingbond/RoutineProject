@@ -7,22 +7,15 @@ using RoutineProject.Services;
 
 namespace RoutineProject.Controllers;
 
-public class MachinesController : ProjectBaseController
+public class MachinesController(MachinesService machinesService) : ProjectBaseController
 {
-    private readonly MachinesService _machinesService;
-
-    public MachinesController(MachinesService machinesService)
-    {
-        _machinesService = machinesService;
-    }
-
     [HttpGet]
     public async Task<ActionResult<PaginationResult<MachineDto>>> GetPaginated([FromRoute] Guid projectId,
         [FromQuery] GetMachinesListPaginationMeta paginationMeta)
     {
         try
         {
-            var result = await _machinesService.GetPaginatedAsync(User, projectId, paginationMeta);
+            var result = await machinesService.GetPaginatedAsync(User, projectId, paginationMeta);
             return result;
         }
         catch (Exception e)
@@ -36,7 +29,7 @@ public class MachinesController : ProjectBaseController
     {
         try
         {
-            var result = await _machinesService.GetMetadataAsync(projectId);
+            var result = await machinesService.GetMetadataAsync(projectId);
             return result;
         }
         catch (UnauthorizedAccessException e)
@@ -54,7 +47,7 @@ public class MachinesController : ProjectBaseController
     {
         try
         {
-            var result = await _machinesService.CreateMachineAsync(User, machineDto, projectId);
+            var result = await machinesService.CreateMachineAsync(User, machineDto, projectId);
             return result;
         }
         catch (UnauthorizedAccessException e)
@@ -72,7 +65,7 @@ public class MachinesController : ProjectBaseController
     {
         try
         {
-            var result = await _machinesService.UpdateMachineAsync(User, machineDto, projectId);
+            var result = await machinesService.UpdateMachineAsync(User, machineDto, projectId);
             return result;
         }
         catch (UnauthorizedAccessException e)
@@ -91,7 +84,7 @@ public class MachinesController : ProjectBaseController
     {
         try
         {
-            await _machinesService.DeleteMachineAsync(User, projectId, machineId);
+            await machinesService.DeleteMachineAsync(User, projectId, machineId);
             return Ok();
         }
         catch (UnauthorizedAccessException e)
