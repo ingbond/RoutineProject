@@ -1,26 +1,17 @@
 namespace RoutineProject.HostedServices.Base;
 
-public abstract class BaseHostedService : BackgroundService
+public abstract class BaseHostedService(
+    ILogger logger,
+    IServiceScopeFactory scopeFactory,
+    TimeSpan interval) : BackgroundService
 {
-    protected readonly ILogger _logger;
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly TimeSpan _interval;
-
-    protected BaseHostedService(
-        ILogger logger,
-        IServiceScopeFactory scopeFactory,
-        TimeSpan interval)
-    {
-        _logger = logger;
-        _scopeFactory = scopeFactory;
-        _interval = interval;
-    }
+    protected readonly ILogger _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Scheduler started");
 
-        using var timer = new PeriodicTimer(_interval);
+        using var timer = new PeriodicTimer(interval);
 
         try
         {
@@ -28,7 +19,7 @@ public abstract class BaseHostedService : BackgroundService
             {
                 try
                 {
-                    using var scope = _scopeFactory.CreateScope();
+                    using var scope = scopeFactory.CreateScope();
                     _logger.LogDebug("Executing worker function");
 
                     await DoWorkAsync(scope, stoppingToken);
