@@ -1,68 +1,59 @@
 namespace RoutineProject.HostedServices.Base;
 
-public abstract class BaseHostedService : IHostedService
+public abstract class BaseHostedService : BackgroundService
 {
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
     protected readonly ILogger _logger;
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly int _taskDebounceTimeoutMs;
-    private readonly Thread _thread;
-    private CancellationToken _token;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly TimeSpan _interval;
 
     protected BaseHostedService(
         ILogger logger,
-        IServiceScopeFactory serviceScopeFactory,
-        int taskDebounceTimeMs = 60 * 60 * 1000
-    )
+        IServiceScopeFactory scopeFactory,
+        TimeSpan interval)
     {
         _logger = logger;
-        _serviceScopeFactory = serviceScopeFactory;
-        _thread = new Thread(CyclicWorkSchedulerAsync);
-        _taskDebounceTimeoutMs = taskDebounceTimeMs;
+        _scopeFactory = scopeFactory;
+        _interval = interval;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Started");
-        _thread.Start();
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Stopped");
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource.Dispose();
-        return Task.CompletedTask;
-    }
-
-    protected abstract Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken);
-
-    private async void CyclicWorkSchedulerAsync()
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Scheduler started");
-        _token = _cancellationTokenSource.Token;
 
-        while (!_token.IsCancellationRequested)
+        using var timer = new PeriodicTimer(_interval);
+
+        try
         {
-            try
+            while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                using var scope = _serviceScopeFactory.CreateScope();
-                _logger.LogDebug("Executing worker function");
-                await DoWorkAsync(scope, _token);
-            }
-            catch (Exception e)
-            {
-                if (e is OperationCanceledException)
+                try
                 {
-                    _logger.LogError("Operation was canceled");
-                    continue;
+                    using var scope = _scopeFactory.CreateScope();
+                    _logger.LogDebug("Executing worker function");
+
+                    await DoWorkAsync(scope, stoppingToken);
                 }
-
-                _logger.LogError(e, "Unhandled exception occured");
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    _logger.LogDebug("Execution canceled");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unhandled exception occurred");
+                }
             }
-
-            _token.WaitHandle.WaitOne(_taskDebounceTimeoutMs);
         }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown
+            _logger.LogInformation("Scheduler shutdown");
+        }
+
+        _logger.LogInformation("Scheduler stopped");
     }
+
+    protected abstract Task DoWorkAsync(
+        IServiceScope scope,
+        CancellationToken cancellationToken);
 }
